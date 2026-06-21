@@ -1,0 +1,59 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  CORE_VERSION: v35.9.27
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Set up MDK
+        uses: dead-cells-core-modding/setup-mdk@main
+        with:
+          downloadurl: https://github.com/dead-cells-core-modding/core/releases/download/${{ env.CORE_VERSION }}/win-x64.zip
+
+      - name: Build
+        run: dotnet build -c Release
+
+      - name: Read version
+        id: meta
+        shell: pwsh
+        run: |
+          $v = (Get-Content modinfo.json | ConvertFrom-Json).version
+          "version=$v" >> $env:GITHUB_OUTPUT
+
+      - name: Package
+        shell: pwsh
+        run: |
+          Compress-Archive -Path bin/Release/net10.0/output/LocalWorkshop -DestinationPath LocalWorkshop.zip -Force
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.meta.outputs.version }}-build.${{ github.run_number }}
+          name: LocalWorkshop v${{ steps.meta.outputs.version }} (build ${{ github.run_number }})
+          body: |
+            Automated build from commit ${{ github.sha }} against DCCM core ${{ env.CORE_VERSION }}.
+
+            Install: extract LocalWorkshop.zip into <game>/coremod/mods/ so that
+            coremod/mods/LocalWorkshop/LocalWorkshop.dll exists. See the README for details.
+          files: LocalWorkshop.zip
+          fail_on_unmatched_files: true
