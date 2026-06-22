@@ -61,30 +61,43 @@ Dead Cells/
             │
             ├── BetterDrops/
             │   ├── res.pak
-            │   ├── info.json       (optional)
+            │   ├── settings.json
             │   └── preview.png     (optional)
             │
-            └── 1234567890/         (e.g. a Steam Workshop folder)
-                └── res.pak
+            └── 1234567890/         (a Steam Workshop folder)
+                ├── res.pak
+                └── settings.json
 ```
 
-### Mod metadata (optional)
+### Mod metadata — `settings.json`
 
-Add an `info.json` (or `settings.json`) next to the `.pak` to control how the mod is
-displayed and loaded. Every field is optional:
+Every mod folder is described by a **`settings.json`** next to the `.pak`. Mods you bring over from
+the Steam Workshop **always** ship one — Steam writes it — so they work as-is; just keep the file
+next to the pak. For your own hand-made paks, add a `settings.json` too.
 
-```jsonc
+A Steam Workshop `settings.json` looks like this:
+
+```json
 {
-  "title": "Better Drops",          // name shown in the menu
-  "description": "Tweaks item drop rates",
-  "author": "SomeModder",
-  "category": "Gameplay",
-  "enabledByDefault": false,         // load this mod even before it's toggled on
-  "pak": "res.pak"                   // load a specific .pak instead of auto-detecting
+  "name": "100x more Cells",
+  "category": "Gameplay"
 }
 ```
 
-If no metadata is present, the menu falls back to the folder name / a generated id.
+LocalWorkshop understands the following fields (Workshop files only use `name` / `category`; the
+rest are available if you author your own):
+
+| field | purpose |
+|---|---|
+| `name` / `title` | name shown in the menu (`title` wins if both are present) |
+| `description` | sub-text shown under the toggle |
+| `author` | shown when there is no description |
+| `category` | shown when there is no description or author |
+| `enabledByDefault` | load the mod the first time it is seen, before it is toggled on |
+| `pak` | load a specific `.pak` in the folder instead of auto-detecting the first one |
+
+> The file may also be named `info.json` if you prefer. Without it, the menu falls back to the
+> folder name and a generated id.
 
 ### How mod ids work
 
@@ -116,6 +129,15 @@ Your choices are saved to:
 ```text
 coremod/config/localworkshop.json
 ```
+
+---
+
+## Documentation
+
+Developer documentation lives in [`docs/`](docs/):
+
+* [`docs/architecture.md`](docs/architecture.md) — how the mod works end to end: components,
+  load lifecycle, and every engine hook / API it touches.
 
 ---
 
