@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 env:
-  CORE_VERSION: v35.9.27
+  CORE_VERSION: v35.14.1
 
 jobs:
   release:

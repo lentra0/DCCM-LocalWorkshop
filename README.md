@@ -25,7 +25,7 @@ you already downloaded from the Workshop.
 * Dead Cells
 * [DCCM (Dead Cells Core Modding)](https://github.com/dead-cells-core-modding/core)
 
-Built against DCCM core version **35.9.27**.
+Built against DCCM core version **35.14.1**.
 
 ---
 

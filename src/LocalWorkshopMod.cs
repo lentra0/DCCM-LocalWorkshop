@@ -23,7 +23,6 @@ namespace LocalWorkshop
 
         public override void Initialize()
         {
-            _bridge.Install();
             Scan();
         }
 
@@ -42,7 +41,7 @@ namespace LocalWorkshop
         void IOnAfterLoadingAssets.OnAfterLoadingAssets()
         {
             Scan();
-            _bridge.ReMergeIfMounted();
+            _bridge.ApplyEnabledDiffPaks();
         }
 
         IModMenu IModMenuProvider.GetModMenu()

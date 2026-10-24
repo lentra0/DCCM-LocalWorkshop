@@ -1,5 +1,3 @@
-using dc.tool.mod;
-using HaxeProxy.Runtime;
 using ModCore.Modules;
 using ModCore.Utilities;
 using Serilog;
@@ -16,15 +14,6 @@ namespace LocalWorkshop
 
         public int MountedCount => _mounted.Count;
 
-        public void Install()
-        {
-            Hook_ModManager.onSteamInit += (orig, self) =>
-            {
-                orig(self);
-                ApplyEnabledDiffPaks();
-            };
-        }
-
         public void SetItems(IReadOnlyList<LocalWorkshopItem> items) => _items = items;
 
         public void ApplyEnabledDiffPaks()
@@ -32,11 +21,6 @@ namespace LocalWorkshop
             foreach (var item in _items)
                 if (_config.IsEnabled(item)) MountPak(item.PakPath);
 
-            if (_mounted.Count > 0) MergeCdb();
-        }
-
-        public void ReMergeIfMounted()
-        {
             if (_mounted.Count > 0) MergeCdb();
         }
 
@@ -67,14 +51,27 @@ namespace LocalWorkshop
         {
             try
             {
-                dc.Data.Class.loadJson.Invoke(
-                    CDBManager.Class.instance.getAlteredCDB(),
-                    default(Ref<bool>));
+                var cdb = CDBManager.Instance;
+                cdb.LoadJsonData(RestoreRowOrder(cdb.GetAlteredCDB()));
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "[LocalWorkshop] CastleDB merge failed");
             }
+        }
+
+        private static string RestoreRowOrder(string json)
+        {
+            try
+            {
+                json = CdbRowOrder.Restore(json, out var sheets);
+                if (sheets > 0) Log.Information("[LocalWorkshop] restored row order in {count} CDB sheet(s)", sheets);
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "[LocalWorkshop] could not restore CDB row order, using the DCCM merge as is");
+            }
+            return json;
         }
     }
 }
